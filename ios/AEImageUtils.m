@@ -41,7 +41,7 @@ bool saveImage(NSString *fullPath, UIImage *image, NSString *format, float quali
   return [fileManager createFileAtPath:fullPath contents:data attributes:nil];
 }
 
-NSString *generateFilePath(NSString *ext, NSString *outputPath)
+NSString *generateFilePath(NSString *ext, NSString *outputPath, NSError *error)
 {
   NSString *directory;
 
@@ -52,11 +52,8 @@ NSString *generateFilePath(NSString *ext, NSString *outputPath)
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     directory = [documentsDirectory stringByAppendingPathComponent:outputPath];
-    NSError *error;
-    [[NSFileManager defaultManager] createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error];
-    if (error) {
-      NSLog(@"Error creating documents subdirectory: %@", error);
-      @throw [NSException exceptionWithName:@"InvalidPathException" reason:[NSString stringWithFormat:@"Error creating documents subdirectory: %@", error] userInfo:nil];
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error]) {
+      return nil;
     }
   }
 
@@ -116,10 +113,9 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
     extension = @"png";
   }
 
-  NSString* fullPath;
-  @try {
-    fullPath = generateFilePath(extension, outputPath);
-  } @catch (NSException *exception) {
+  NSString *fullPath = nil;
+  NSError *filePathError = nil;
+  if (!(fullPath = generateFilePath(extension, outputPath, filePathError))) {
     callback(@[@"Invalid output path.", @""]);
     return;
   }
