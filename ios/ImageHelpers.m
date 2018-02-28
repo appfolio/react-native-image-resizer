@@ -108,7 +108,7 @@ CGImageRef CreateCGImageFromUIImageScaled(UIImage *image, float scaleFactor)
     bmContext = CreateCGBitmapContextForWidthAndHeight(height, width, NULL, kDefaultCGBitmapInfo);
   }
 
-  //CGContextSetInterpolationQuality(bmContext, kCGInterpolationLow);
+  CGContextSetInterpolationQuality(bmContext, kCGInterpolationHigh);
   CGContextSetBlendMode(bmContext, kCGBlendModeCopy); // we just want to copy the data
 
   switch (orientation) {
