@@ -9,6 +9,21 @@
 
 RCT_EXPORT_MODULE()
 
+static dispatch_queue_t RCTGetMethodQueue()
+{
+  static dispatch_queue_t queue;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    queue = dispatch_queue_create("com.appfolio.react.ImageResizerQueue", DISPATCH_QUEUE_SERIAL);
+  });
+  return queue;
+}
+
+- (dispatch_queue_t)methodQueue
+{
+  return RCTGetMethodQueue();
+}
+
 bool saveImage(NSString *fullPath, UIImage *image, NSString *format, float quality)
 {
   NSData *data = nil;
@@ -109,53 +124,56 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
     return;
   }
 
-  [_bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:path] callback:^(NSError *error, UIImage *image) {
-    if (error || image == nil) {
-      if ([path hasPrefix:@"data:"] || [path hasPrefix:@"file:"]) {
-        NSURL *imageUrl = [[NSURL alloc] initWithString:path];
-        image = [UIImage imageWithData:[NSData dataWithContentsOfURL:imageUrl]];
-      } else {
-        image = [[UIImage alloc] initWithContentsOfFile:path];
+  [_bridge.imageLoader loadImageWithURLRequest:[RCTConvert NSURLRequest:path] callback:^(NSError *error, UIImage *blockImage) {
+    dispatch_async(RCTGetMethodQueue(), ^{
+      UIImage *image = blockImage;
+      if (error || image == nil) {
+        if ([path hasPrefix:@"data:"] || [path hasPrefix:@"file:"]) {
+          NSURL *imageUrl = [[NSURL alloc] initWithString:path];
+          image = [UIImage imageWithData:[NSData dataWithContentsOfURL:imageUrl]];
+        } else {
+          image = [[UIImage alloc] initWithContentsOfFile:path];
+        }
+        if (image == nil) {
+          callback(@[@"Can't retrieve the file from the path.", @""]);
+          return;
+        }
       }
-      if (image == nil) {
-        callback(@[@"Can't retrieve the file from the path.", @""]);
+
+      // Rotate image if rotation is specified.
+      if (0 != (int)rotation) {
+        image = rotateImage(image, rotation);
+        if (image == nil) {
+          callback(@[@"Can't rotate the image.", @""]);
+          return;
+        }
+      }
+
+      // Do the resizing
+      UIImage *scaledImage = [image scaleToSize:newSize];
+      if (scaledImage == nil) {
+        callback(@[@"Can't resize the image.", @""]);
         return;
       }
-    }
 
-    // Rotate image if rotation is specified.
-    if (0 != (int)rotation) {
-      image = rotateImage(image, rotation);
-      if (image == nil) {
-        callback(@[@"Can't rotate the image.", @""]);
+      // Compress and save the image
+      if (!saveImage(fullPath, scaledImage, format, quality)) {
+        callback(@[@"Can't save the image. Check your compression format and your output path", @""]);
         return;
       }
-    }
+      NSURL *fileUrl = [[NSURL alloc] initFileURLWithPath:fullPath];
+      NSString *fileName = fileUrl.lastPathComponent;
+      NSError *attributesError = nil;
+      NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:&attributesError];
+      NSNumber *fileSize = fileAttributes == nil ? 0 : [fileAttributes objectForKey:NSFileSize];
+      NSDictionary *response = @{@"path": fullPath,
+                                 @"uri": fileUrl.absoluteString,
+                                 @"name": fileName,
+                                 @"size": fileSize == nil ? @(0) : fileSize
+                                 };
 
-    // Do the resizing
-    UIImage *scaledImage = [image scaleToSize:newSize];
-    if (scaledImage == nil) {
-      callback(@[@"Can't resize the image.", @""]);
-      return;
-    }
-
-    // Compress and save the image
-    if (!saveImage(fullPath, scaledImage, format, quality)) {
-      callback(@[@"Can't save the image. Check your compression format and your output path", @""]);
-      return;
-    }
-    NSURL *fileUrl = [[NSURL alloc] initFileURLWithPath:fullPath];
-    NSString *fileName = fileUrl.lastPathComponent;
-    NSError *attributesError = nil;
-    NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:&attributesError];
-    NSNumber *fileSize = fileAttributes == nil ? 0 : [fileAttributes objectForKey:NSFileSize];
-    NSDictionary *response = @{@"path": fullPath,
-                               @"uri": fileUrl.absoluteString,
-                               @"name": fileName,
-                               @"size": fileSize == nil ? @(0) : fileSize
-                               };
-
-    callback(@[[NSNull null], response]);
+      callback(@[[NSNull null], response]);
+    });
   }];
 }
 
