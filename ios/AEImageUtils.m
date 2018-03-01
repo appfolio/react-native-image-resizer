@@ -1,19 +1,13 @@
-//
-//  ImageResize.m
-//  ChoozItApp
-//
-//  Created by Florian Rival on 19/11/15.
-//
-
-#include "RCTImageResizer.h"
-#include "ImageHelpers.h"
 #import <React/RCTImageLoader.h>
 
-@implementation ImageResizer
+#import "AEImageUtils.h"
+#import "ImageHelpers.h"
+
+@implementation AEImageUtils
 
 @synthesize bridge = _bridge;
 
-RCT_EXPORT_MODULE();
+RCT_EXPORT_MODULE()
 
 bool saveImage(NSString * fullPath, UIImage * image, NSString * format, float quality)
 {
@@ -23,11 +17,11 @@ bool saveImage(NSString * fullPath, UIImage * image, NSString * format, float qu
     } else if ([format isEqualToString:@"PNG"]) {
         data = UIImagePNGRepresentation(image);
     }
-    
+
     if (data == nil) {
         return NO;
     }
-    
+
     NSFileManager* fileManager = [NSFileManager defaultManager];
     return [fileManager createFileAtPath:fullPath contents:data attributes:nil];
 }
@@ -65,14 +59,14 @@ UIImage * rotateImage(UIImage *inputImage, float rotationDegrees)
     const int rotDiv90 = (int)round(rotationDegrees / 90);
     const int rotQuadrant = rotDiv90 % 4;
     const int rotQuadrantAbs = (rotQuadrant < 0) ? rotQuadrant + 4 : rotQuadrant;
-    
+
     // Return the input image if no rotation specified.
     if (0 == rotQuadrantAbs) {
         return inputImage;
     } else {
         // Rotate the image by 80, 180, 270.
         UIImageOrientation orientation = UIImageOrientationUp;
-        
+
         switch(rotQuadrantAbs) {
             case 1:
                 orientation = UIImageOrientationRight; // 90 deg CW
@@ -84,7 +78,7 @@ UIImage * rotateImage(UIImage *inputImage, float rotationDegrees)
                 orientation = UIImageOrientationLeft; // 90 deg CCW
                 break;
         }
-        
+
         return [[UIImage alloc] initWithCGImage: inputImage.CGImage
                                                   scale: 1.0
                                                   orientation: orientation];
@@ -101,14 +95,14 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
                   callback:(RCTResponseSenderBlock)callback)
 {
     CGSize newSize = CGSizeMake(width, height);
-    
+
     //Set image extension
     NSString *extension = @"jpg";
     if ([format isEqualToString:@"PNG"]) {
         extension = @"png";
     }
 
-    
+
     NSString* fullPath;
     @try {
         fullPath = generateFilePath(extension, outputPath);
@@ -162,7 +156,7 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
                                    @"name": fileName,
                                    @"size": fileSize == nil ? @(0) : fileSize
                                    };
-        
+
         callback(@[[NSNull null], response]);
     }];
 }
