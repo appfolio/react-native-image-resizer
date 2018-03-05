@@ -1,4 +1,4 @@
-package fr.bamlab.rnimageresizer;
+package com.appfolio.react.imageutils;
 
 import android.content.Context;
 import android.content.ContentResolver;

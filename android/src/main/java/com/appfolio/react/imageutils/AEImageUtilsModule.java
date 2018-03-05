@@ -1,4 +1,4 @@
-package fr.bamlab.rnimageresizer;
+package com.appfolio.react.imageutils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,24 +14,17 @@ import com.facebook.react.bridge.WritableMap;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by almouro on 19/11/15.
- */
-class ImageResizerModule extends ReactContextBaseJavaModule {
+public class AEImageUtilsModule extends ReactContextBaseJavaModule {
     private Context context;
 
-    public ImageResizerModule(ReactApplicationContext reactContext) {
+    public AEImageUtilsModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.context = reactContext;
     }
 
-    /**
-     * @return the name of this module. This will be the name used to {@code require()} this module
-     * from javascript.
-     */
     @Override
     public String getName() {
-        return "ImageResizerAndroid";
+        return "AEImageUtils";
     }
 
     @ReactMethod

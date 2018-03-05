@@ -15,7 +15,7 @@ import {
   TouchableOpacity
 } from 'react-native';
 import Spinner from 'react-native-gifted-spinner';
-import ImageResizer from 'react-native-image-resizer';
+import ImageUtils from 'react-native-image-utils';
 
 const styles = StyleSheet.create({
   container: {
@@ -72,7 +72,7 @@ export default class ResizerExample extends Component {
   }
 
   resize() {
-    ImageResizer.createResizedImage(this.state.image.uri, 800, 600, 'JPEG', 80)
+    ImageUtils.createResizedImage(this.state.image.uri, 800, 600, 'JPEG', 80)
     .then(({uri}) => {
       this.setState({
         resizedImageUri: uri,

@@ -9,7 +9,7 @@ export default {
     }
 
     return new Promise((resolve, reject) => {
-      NativeModules.ImageResizer.createResizedImage(path, width, height, format, quality, rotation, outputPath, (err, response) => {
+      NativeModules.AEImageUtils.createResizedImage(path, width, height, format, quality, rotation, outputPath, (err, response) => {
         if (err) {
           return reject(err);
         }

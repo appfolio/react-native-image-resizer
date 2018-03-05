@@ -1,4 +1,4 @@
-declare module "react-native-image-resizer" {
+declare module "react-native-image-utils" {
     export interface Response {
         path: string;
         uri: string;
@@ -6,7 +6,7 @@ declare module "react-native-image-resizer" {
         name?: string;
     }
 
-    export default class ImageResizer {
+    export default class ImageUtils {
         static createResizedImage(
             uri: string, width: number, height: number,
             format: "PNG" | "JPEG" | "WEBP", quality: number,

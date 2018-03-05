@@ -1,10 +1,10 @@
 {
-  "name": "react-native-image-resizer",
-  "version": "1.0.0",
-  "description": "Rescale local images with React Native",
+  "name": "react-native-image-utils",
+  "version": "0.0.1",
+  "description": "Utilities for working with images in React Native",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/4ian/react-native-image-resizer.git"
+    "url": "https://github.com/appfolio/react-native-image-utils.git"
   },
   "keywords": [
     "react-native",
@@ -22,18 +22,10 @@
     "react": "^15.4.0 || ^16.0.0-alpha",
     "react-native": ">=v0.40.0"
   },
-  "author": "Florian Rival <florianr@bam.tech> (http://bam.tech)",
+  "author": "AppFolio, Inc.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/4ian/react-native-image-resizer/issues"
+    "url": "https://github.com/appfolio/react-native-image-utils/issues"
   },
-  "homepage": "https://github.com/4ian/react-native-image-resizer#readme",
-  "devDependencies": {
-    "cz-conventional-changelog": "^1.2.0"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
+  "homepage": "https://github.com/appfolio/react-native-image-utils#readme"
 }
