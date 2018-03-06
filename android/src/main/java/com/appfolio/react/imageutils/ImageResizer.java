@@ -58,8 +58,7 @@ public class ImageResizer {
     /**
      * Rotate the specified bitmap with the given angle, in degrees.
      */
-    public static Bitmap rotateImage(Bitmap source, float angle)
-    {
+    public static Bitmap rotateImage(Bitmap source, float angle) {
         Bitmap retVal;
 
         Matrix matrix = new Matrix();
@@ -76,14 +75,14 @@ public class ImageResizer {
      * Save the given bitmap in a directory. Extension is automatically generated using the bitmap format.
      */
     private static File saveImage(Bitmap bitmap, File saveDirectory, String fileName,
-                                    Bitmap.CompressFormat compressFormat, int quality)
+                                  Bitmap.CompressFormat compressFormat, int quality)
             throws IOException {
         if (bitmap == null) {
             throw new IOException("The bitmap couldn't be resized");
         }
 
         File newFile = new File(saveDirectory, fileName + "." + compressFormat.name());
-        if(!newFile.createNewFile()) {
+        if (!newFile.createNewFile()) {
             throw new IOException("The file already exists");
         }
 
@@ -267,8 +266,8 @@ public class ImageResizer {
      * Create a resized version of the given image.
      */
     public static File createResizedImage(Context context, Uri imageUri, int newWidth,
-                                            int newHeight, Bitmap.CompressFormat compressFormat,
-                                            int quality, int rotation, String outputPath) throws IOException  {
+                                          int newHeight, Bitmap.CompressFormat compressFormat,
+                                          int quality, int rotation, String outputPath) throws IOException  {
         Bitmap sourceImage = null;
         String imageUriScheme = imageUri.getScheme();
         if (imageUriScheme == null || imageUriScheme.equalsIgnoreCase(SCHEME_FILE) || imageUriScheme.equalsIgnoreCase(SCHEME_CONTENT)) {

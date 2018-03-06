@@ -29,7 +29,7 @@ public class AEImageUtilsModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void createResizedImage(String imagePath, int newWidth, int newHeight, String compressFormat,
-                            int quality, int rotation, String outputPath, final Callback successCb, final Callback failureCb) {
+                                   int quality, int rotation, String outputPath, final Callback successCb, final Callback failureCb) {
         try {
             createResizedImageWithExceptions(imagePath, newWidth, newHeight, compressFormat, quality,
                     rotation, outputPath, successCb, failureCb);
@@ -39,8 +39,8 @@ public class AEImageUtilsModule extends ReactContextBaseJavaModule {
     }
 
     private void createResizedImageWithExceptions(String imagePath, int newWidth, int newHeight,
-                                           String compressFormatString, int quality, int rotation, String outputPath,
-                                           final Callback successCb, final Callback failureCb) throws IOException {
+                                                  String compressFormatString, int quality, int rotation, String outputPath,
+                                                  final Callback successCb, final Callback failureCb) throws IOException {
         Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.valueOf(compressFormatString);
         Uri imageUri = Uri.parse(imagePath);
 
