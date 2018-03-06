@@ -24,7 +24,7 @@ static dispatch_queue_t RCTGetMethodQueue()
   return RCTGetMethodQueue();
 }
 
-bool saveImage(NSString *fullPath, UIImage *image, NSString *format, float quality)
+bool saveImage(NSString *fullPath, UIImage *image, NSString *format, float quality, NSError *error)
 {
   NSData *data = nil;
   if ([format isEqualToString:@"JPEG"]) {
@@ -37,8 +37,7 @@ bool saveImage(NSString *fullPath, UIImage *image, NSString *format, float quali
     return NO;
   }
 
-  NSFileManager *fileManager = [NSFileManager defaultManager];
-  return [fileManager createFileAtPath:fullPath contents:data attributes:nil];
+  return [data writeToFile:fullPath options:NSAtomicWrite error:&error];
 }
 
 NSString *generateFilePath(NSString *ext, NSString *outputPath, NSError *error)
@@ -153,7 +152,8 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
       }
 
       // Compress and save the image
-      if (!saveImage(fullPath, scaledImage, format, quality)) {
+      NSError *saveError = nil;
+      if (!saveImage(fullPath, scaledImage, format, quality, saveError)) {
         callback(@[@"Can't save the image. Check your compression format and your output path", @""]);
         return;
       }
