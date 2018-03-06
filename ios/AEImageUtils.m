@@ -1,4 +1,5 @@
 #import <React/RCTImageLoader.h>
+#import <React/RCTUtils.h>
 
 #import "AEImageUtils.h"
 #import "ImageHelpers.h"
@@ -102,7 +103,8 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
                   quality:(float)quality
                   rotation:(float)rotation
                   outputPath:(NSString *)outputPath
-                  callback:(RCTResponseSenderBlock)callback)
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
 {
   CGSize newSize = CGSizeMake(width, height);
 
@@ -115,7 +117,7 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
   NSString *fullPath = nil;
   NSError *filePathError = nil;
   if (!(fullPath = generateFilePath(extension, outputPath, filePathError))) {
-    callback(@[@"Invalid output path.", @""]);
+    reject(RCTErrorUnspecified, @"Invalid output path.", filePathError);
     return;
   }
 
@@ -130,7 +132,7 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
           image = [[UIImage alloc] initWithContentsOfFile:path];
         }
         if (image == nil) {
-          callback(@[@"Can't retrieve the file from the path.", @""]);
+          reject(RCTErrorUnspecified, @"Can't retrieve the file from the path.", error);
           return;
         }
       }
@@ -139,7 +141,7 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
       if (0 != (int)rotation) {
         image = rotateImage(image, rotation);
         if (image == nil) {
-          callback(@[@"Can't rotate the image.", @""]);
+          reject(RCTErrorUnspecified, @"Can't rotate the image.", nil);
           return;
         }
       }
@@ -147,14 +149,14 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
       // Do the resizing
       UIImage *scaledImage = [image scaleToSize:newSize];
       if (scaledImage == nil) {
-        callback(@[@"Can't resize the image.", @""]);
+        reject(RCTErrorUnspecified, @"Can't resize the image.", nil);
         return;
       }
 
       // Compress and save the image
       NSError *saveError = nil;
       if (!saveImage(fullPath, scaledImage, format, quality, saveError)) {
-        callback(@[@"Can't save the image. Check your compression format and your output path", @""]);
+        reject(RCTErrorUnspecified, @"Can't save the image. Check your compression format and your output path.", saveError);
         return;
       }
       NSURL *fileUrl = [[NSURL alloc] initFileURLWithPath:fullPath];
@@ -168,7 +170,7 @@ RCT_EXPORT_METHOD(createResizedImage:(NSString *)path
                                  @"size": fileSize == nil ? @(0) : fileSize
                                  };
 
-      callback(@[[NSNull null], response]);
+      resolve(response);
     });
   }];
 }

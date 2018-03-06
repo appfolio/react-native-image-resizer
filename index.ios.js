@@ -8,14 +8,6 @@ export default {
       throw new Error('Only JPEG and PNG format are supported by createResizedImage');
     }
 
-    return new Promise((resolve, reject) => {
-      NativeModules.AEImageUtils.createResizedImage(path, width, height, format, quality, rotation, outputPath, (err, response) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(response);
-      });
-    });
+    return NativeModules.AEImageUtils.createResizedImage(path, width, height, format, quality, rotation, outputPath);
   },
 };
