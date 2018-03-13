@@ -14,6 +14,7 @@ import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -191,8 +192,8 @@ public class ImageResizer {
     }
 
     /**
-     * Load a bitmap either from a real file or using the {@link ContentResolver} of the current
-     * {@link Context} (to read gallery images for example).
+     * Load a Bitmap using the {@link ContentResolver} of the current
+     * {@link Context} (for real files or gallery images for example).
      *
      * Note that, when options.inJustDecodeBounds = true, we actually expect sourceImage to remain
      * as null (see https://developer.android.com/training/displaying-bitmaps/load-bitmap.html), so
@@ -204,23 +205,16 @@ public class ImageResizer {
     @SuppressLint("NewApi")
     private static Bitmap loadBitmap(Context context, Uri imageUri, BitmapFactory.Options options) throws IOException {
         Bitmap sourceImage = null;
-        String imageUriScheme = imageUri.getScheme();
-        if (imageUriScheme == null || !imageUriScheme.equalsIgnoreCase(SCHEME_CONTENT)) {
-            try {
-                sourceImage = BitmapFactory.decodeFile(imageUri.getPath(), options);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new IOException("Error decoding image file");
+        ContentResolver cr = context.getContentResolver();
+        try (InputStream input = cr.openInputStream(imageUri)) {
+            if (input != null) {
+                sourceImage = BitmapFactory.decodeStream(input, null, options);
+                input.close();
             }
-        } else {
-            ContentResolver cr = context.getContentResolver();
-            try (InputStream input = cr.openInputStream(imageUri)) {
-                if (input != null) {
-                    sourceImage = BitmapFactory.decodeStream(input, null, options);
-                    input.close();
-                }
-            }
+        } catch (FileNotFoundException e) {
+            throw new FileNotFoundException("Unable to load image into Bitmap: " + e.getMessage());
         }
+
         return sourceImage;
     }
 
