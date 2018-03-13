@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.util.Date;
 
 /**
- * Provide methods to resize and rotate an image file.
+ * Provide method to resize image
  */
-public class ImageResizer {
+public final class ImageResizer {
     private final static String IMAGE_JPEG = "image/jpeg";
     private final static String IMAGE_PNG = "image/png";
     private final static String SCHEME_DATA = "data";
@@ -58,7 +58,7 @@ public class ImageResizer {
     /**
      * Rotate the specified bitmap with the given angle, in degrees.
      */
-    public static Bitmap rotateImage(Bitmap source, float angle) {
+    private static Bitmap rotateImage(Bitmap source, float angle) {
         Bitmap retVal;
 
         Matrix matrix = new Matrix();
@@ -136,7 +136,7 @@ public class ImageResizer {
     /**
      * Get orientation by reading Image metadata
      */
-    public static int getOrientation(Context context, Uri uri) {
+    private static int getOrientation(Context context, Uri uri) {
         try {
             File file = getFileFromUri(context, uri);
             if (file.exists()) {
@@ -151,7 +151,7 @@ public class ImageResizer {
     /**
      * Convert metadata to degrees
      */
-    public static int getOrientation(ExifInterface exif) {
+    private static int getOrientation(ExifInterface exif) {
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
         switch (orientation) {
             case ExifInterface.ORIENTATION_ROTATE_90:
