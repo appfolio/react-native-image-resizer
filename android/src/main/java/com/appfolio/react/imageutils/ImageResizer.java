@@ -1,5 +1,6 @@
 package com.appfolio.react.imageutils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -196,7 +197,11 @@ public class ImageResizer {
      * Note that, when options.inJustDecodeBounds = true, we actually expect sourceImage to remain
      * as null (see https://developer.android.com/training/displaying-bitmaps/load-bitmap.html), so
      * getting null sourceImage at the completion of this method is not always worthy of an error.
+     *
+     * Suppress the try-with-resources warning since Android Studio 3.0 extends support to all API levels.
+     * See https://developer.android.com/studio/write/java8-support.html#supported_features
      */
+    @SuppressLint("NewApi")
     private static Bitmap loadBitmap(Context context, Uri imageUri, BitmapFactory.Options options) throws IOException {
         Bitmap sourceImage = null;
         String imageUriScheme = imageUri.getScheme();
@@ -209,10 +214,11 @@ public class ImageResizer {
             }
         } else {
             ContentResolver cr = context.getContentResolver();
-            InputStream input = cr.openInputStream(imageUri);
-            if (input != null) {
-                sourceImage = BitmapFactory.decodeStream(input, null, options);
-                input.close();
+            try (InputStream input = cr.openInputStream(imageUri)) {
+                if (input != null) {
+                    sourceImage = BitmapFactory.decodeStream(input, null, options);
+                    input.close();
+                }
             }
         }
         return sourceImage;
