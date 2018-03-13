@@ -42,7 +42,7 @@ public class AEImageUtilsModule extends ReactContextBaseJavaModule {
                                                   String compressFormatString, int quality, int rotation, String outputPath,
                                                   final Callback successCb, final Callback failureCb) throws IOException {
         Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.valueOf(compressFormatString);
-        Uri imageUri = Uri.parse(imagePath);
+        Uri imageUri = Uri.parse(imagePath).normalizeScheme();
 
         File resizedImage = ImageResizer.createResizedImage(this.context, imageUri, newWidth,
                 newHeight, compressFormat, quality, rotation, outputPath);

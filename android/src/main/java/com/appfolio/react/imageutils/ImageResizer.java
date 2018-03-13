@@ -27,8 +27,6 @@ public class ImageResizer {
     private final static String IMAGE_JPEG = "image/jpeg";
     private final static String IMAGE_PNG = "image/png";
     private final static String SCHEME_DATA = "data";
-    private final static String SCHEME_CONTENT = "content";
-    private final static String SCHEME_FILE = "file";
 
     /**
      * Resize the specified bitmap, keeping its aspect ratio.
@@ -203,7 +201,7 @@ public class ImageResizer {
      * See https://developer.android.com/studio/write/java8-support.html#supported_features
      */
     @SuppressLint("NewApi")
-    private static Bitmap loadBitmap(Context context, Uri imageUri, BitmapFactory.Options options) throws IOException {
+    private static Bitmap loadBitmapFromFile(Context context, Uri imageUri, BitmapFactory.Options options) throws IOException {
         Bitmap sourceImage = null;
         ContentResolver cr = context.getContentResolver();
         try (InputStream input = cr.openInputStream(imageUri)) {
@@ -219,30 +217,12 @@ public class ImageResizer {
     }
 
     /**
-     * Loads the bitmap resource from the file specified in imagePath.
-     */
-    private static Bitmap loadBitmapFromFile(Context context, Uri imageUri, int newWidth,
-                                             int newHeight) throws IOException  {
-        // Decode the image bounds to find the size of the source image.
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        loadBitmap(context, imageUri, options);
-
-        // Set a sample size according to the image size to lower memory usage.
-        options.inSampleSize = calculateInSampleSize(options, newWidth, newHeight);
-        options.inJustDecodeBounds = false;
-        System.out.println(options.inSampleSize);
-        return loadBitmap(context, imageUri, options);
-
-    }
-
-    /**
-     * Loads the bitmap resource from a base64 encoded jpg or png.
+     * Load a Bitmap from a Base64 encoded jpg or png.
      * Format is as such:
      * png: 'data:image/png;base64,iVBORw0KGgoAA...'
      * jpg: 'data:image/jpeg;base64,/9j/4AAQSkZJ...'
      */
-    private static Bitmap loadBitmapFromBase64(Uri imageUri) {
+    private static Bitmap loadBitmapFromBase64(Uri imageUri, BitmapFactory.Options options) {
         Bitmap sourceImage = null;
         String imagePath = imageUri.getSchemeSpecificPart();
         int commaLocation = imagePath.indexOf(',');
@@ -255,11 +235,42 @@ public class ImageResizer {
                 // base64 image. Convert to a bitmap.
                 final String encodedImage = imagePath.substring(commaLocation + 1);
                 final byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                sourceImage = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                sourceImage = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length, options);
             }
         }
 
         return sourceImage;
+    }
+
+    /**
+     * Load a Bitmap from a Uri which can either be Base64 encoded or a path to a file or content scheme
+     */
+    private static Bitmap loadBitmap(Context context, Uri imageUri, BitmapFactory.Options options) throws IOException {
+        Bitmap sourceImage = null;
+        String imageUriScheme = imageUri.getScheme();
+        if (imageUriScheme == null || ContentResolver.SCHEME_CONTENT.equals(imageUriScheme) || ContentResolver.SCHEME_FILE.equals(imageUriScheme)) {
+            sourceImage = loadBitmapFromFile(context, imageUri, options);
+        } else if (SCHEME_DATA.equals(imageUriScheme)) {
+            sourceImage = loadBitmapFromBase64(imageUri, options);
+        }
+
+        return sourceImage;
+    }
+
+    /**
+     * Load a Bitmap with sane decoding options based on the requested size
+     */
+    private static Bitmap loadBitmap(Context context, Uri imageUri,
+                                     int newWidth, int newHeight) throws IOException  {
+        // Decode the image bounds to find the size of the source image.
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        loadBitmap(context, imageUri, options);
+
+        // Set a sample size according to the image size to lower memory usage.
+        options.inSampleSize = calculateInSampleSize(options, newWidth, newHeight);
+        options.inJustDecodeBounds = false;
+        return loadBitmap(context, imageUri, options);
     }
 
     /**
@@ -268,13 +279,7 @@ public class ImageResizer {
     public static File createResizedImage(Context context, Uri imageUri, int newWidth,
                                           int newHeight, Bitmap.CompressFormat compressFormat,
                                           int quality, int rotation, String outputPath) throws IOException  {
-        Bitmap sourceImage = null;
-        String imageUriScheme = imageUri.getScheme();
-        if (imageUriScheme == null || imageUriScheme.equalsIgnoreCase(SCHEME_FILE) || imageUriScheme.equalsIgnoreCase(SCHEME_CONTENT)) {
-            sourceImage = ImageResizer.loadBitmapFromFile(context, imageUri, newWidth, newHeight);
-        } else if (imageUriScheme.equalsIgnoreCase(SCHEME_DATA)) {
-            sourceImage = ImageResizer.loadBitmapFromBase64(imageUri);
-        }
+        Bitmap sourceImage = loadBitmap(context, imageUri, newWidth, newHeight);
 
         if (sourceImage == null) {
             throw new IOException("Unable to load source image from path");
