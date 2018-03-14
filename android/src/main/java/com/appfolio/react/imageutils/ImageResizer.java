@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -75,7 +74,11 @@ final class ImageResizer {
 
     /**
      * Save the given bitmap in a directory. Extension is automatically generated using the bitmap format.
+     *
+     * Suppress the try-with-resources warning since Android Studio 3.0 extends support to all API levels.
+     * See https://developer.android.com/studio/write/java8-support.html#supported_features
      */
+    @SuppressLint("NewApi")
     private static File saveImage(@NonNull final Bitmap bitmap, @NonNull  final File saveDirectory,
                                   @NonNull final String fileName, @NonNull final Bitmap.CompressFormat compressFormat,
                                   final int quality)
@@ -85,17 +88,12 @@ final class ImageResizer {
             throw new IOException("The file already exists");
         }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(compressFormat, quality, outputStream);
-        byte[] bitmapData = outputStream.toByteArray();
+        try (final FileOutputStream output = new FileOutputStream(newFile)) {
+            bitmap.compress(compressFormat, quality, output);
 
-        outputStream.flush();
-        outputStream.close();
-
-        FileOutputStream fos = new FileOutputStream(newFile);
-        fos.write(bitmapData);
-        fos.flush();
-        fos.close();
+            output.flush();
+            output.close();
+        }
 
         return newFile;
     }
