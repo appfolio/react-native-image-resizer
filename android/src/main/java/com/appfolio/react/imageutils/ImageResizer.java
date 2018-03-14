@@ -272,6 +272,7 @@ final class ImageResizer {
         // Decode the image bounds to find the size of the source image.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
+        options.inDither = true; // known to improve picture quality at low cost
         loadBitmap(context, imageUri, options);
 
         // Set a sample size according to the image size to lower memory usage.
