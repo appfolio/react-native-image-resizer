@@ -23,7 +23,7 @@ import java.util.Date;
 /**
  * Provide method to resize image
  */
-public final class ImageResizer {
+final class ImageResizer {
     private final static String IMAGE_JPEG = "image/jpeg";
     private final static String IMAGE_PNG = "image/png";
     private final static String SCHEME_DATA = "data";
@@ -276,9 +276,9 @@ public final class ImageResizer {
     /**
      * Create a resized version of the given image.
      */
-    public static File createResizedImage(Context context, Uri imageUri, int newWidth,
-                                          int newHeight, Bitmap.CompressFormat compressFormat,
-                                          int quality, int rotation, String outputPath) throws IOException  {
+    static File createResizedImage(Context context, Uri imageUri, int newWidth,
+                                   int newHeight, Bitmap.CompressFormat compressFormat,
+                                   int quality, int rotation, String outputPath) throws IOException  {
         Bitmap sourceImage = loadBitmap(context, imageUri, newWidth, newHeight);
 
         if (sourceImage == null) {
