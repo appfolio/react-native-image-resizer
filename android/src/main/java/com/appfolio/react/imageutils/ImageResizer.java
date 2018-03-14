@@ -10,6 +10,8 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
@@ -31,24 +33,22 @@ final class ImageResizer {
     /**
      * Resize the specified bitmap, keeping its aspect ratio.
      */
-    private static Bitmap resizeImage(Bitmap image, int maxWidth, int maxHeight) {
-        Bitmap newImage = null;
-        if (image == null) {
-            return null; // Can't load the image from the given path.
-        }
+    @NonNull
+    private static Bitmap resizeImage(@NonNull final Bitmap sourceImage, final int maxWidth, final int maxHeight) {
+        Bitmap newImage = sourceImage;
 
         if (maxHeight > 0 && maxWidth > 0) {
-            float width = image.getWidth();
-            float height = image.getHeight();
+            final float width = sourceImage.getWidth();
+            final float height = sourceImage.getHeight();
 
-            float ratio = Math.min((float)maxWidth / width, (float)maxHeight / height);
+            final float ratio = Math.min((float)maxWidth / width, (float)maxHeight / height);
 
-            int finalWidth = (int) (width * ratio);
-            int finalHeight = (int) (height * ratio);
+            final int finalWidth = (int) (width * ratio);
+            final int finalHeight = (int) (height * ratio);
             try {
-                newImage = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true);
-            } catch (OutOfMemoryError e) {
-                return null;
+                newImage = Bitmap.createScaledBitmap(sourceImage, finalWidth, finalHeight, true);
+            } catch(OutOfMemoryError e) {
+                throw new OutOfMemoryError("Could not resize image: " + e.getMessage());
             }
         }
 
@@ -58,30 +58,29 @@ final class ImageResizer {
     /**
      * Rotate the specified bitmap with the given angle, in degrees.
      */
-    private static Bitmap rotateImage(Bitmap source, float angle) {
-        Bitmap retVal;
+    @NonNull
+    private static Bitmap rotateImage(@NonNull final Bitmap sourceImage, final float angle) {
+        Bitmap newImage;
 
-        Matrix matrix = new Matrix();
+        final Matrix matrix = new Matrix();
         matrix.postRotate(angle);
         try {
-            retVal = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+            newImage = Bitmap.createBitmap(sourceImage, 0, 0, sourceImage.getWidth(), sourceImage.getHeight(), matrix, true);
         } catch (OutOfMemoryError e) {
-            return null;
+            throw new OutOfMemoryError("Could not rotate image: " + e.getMessage());
         }
-        return retVal;
+
+        return newImage;
     }
 
     /**
      * Save the given bitmap in a directory. Extension is automatically generated using the bitmap format.
      */
-    private static File saveImage(Bitmap bitmap, File saveDirectory, String fileName,
-                                  Bitmap.CompressFormat compressFormat, int quality)
+    private static File saveImage(@NonNull final Bitmap bitmap, @NonNull  final File saveDirectory,
+                                  @NonNull final String fileName, @NonNull final Bitmap.CompressFormat compressFormat,
+                                  final int quality)
             throws IOException {
-        if (bitmap == null) {
-            throw new IOException("The bitmap couldn't be resized");
-        }
-
-        File newFile = new File(saveDirectory, fileName + "." + compressFormat.name());
+        final File newFile = new File(saveDirectory, fileName + "." + compressFormat.name());
         if (!newFile.createNewFile()) {
             throw new IOException("The file already exists");
         }
@@ -282,36 +281,45 @@ final class ImageResizer {
         Bitmap sourceImage = loadBitmap(context, imageUri, newWidth, newHeight);
 
         if (sourceImage == null) {
-            throw new IOException("Unable to load source image from path");
+            throw new IOException("Unable to load source image");
         }
 
         // Scale it first so there are fewer pixels to transform in the rotation
-        Bitmap scaledImage = ImageResizer.resizeImage(sourceImage, newWidth, newHeight);
-        if (sourceImage != scaledImage) {
-            sourceImage.recycle();
+        Bitmap scaledImage = null;
+        try {
+            scaledImage = ImageResizer.resizeImage(sourceImage, newWidth, newHeight);
+        } finally {
+            if (sourceImage != scaledImage) {
+                sourceImage.recycle();
+            }
         }
 
         // Rotate if necessary
-        Bitmap rotatedImage = scaledImage;
+        Bitmap rotatedImage = null;
         int orientation = getOrientation(context, imageUri);
         rotation = orientation + rotation;
-        rotatedImage = ImageResizer.rotateImage(scaledImage, rotation);
-
-        if (scaledImage != rotatedImage) {
-            scaledImage.recycle();
+        try {
+            rotatedImage = ImageResizer.rotateImage(scaledImage, rotation);
+        } finally {
+            if (scaledImage != rotatedImage) {
+                scaledImage.recycle();
+            }
         }
 
         // Save the resulting image
-        File path = context.getCacheDir();
-        if (outputPath != null) {
-            path = new File(outputPath);
+        File newFile;
+        try {
+            File path = context.getCacheDir();
+            if (outputPath != null) {
+                path = new File(outputPath);
+            }
+
+            newFile = ImageResizer.saveImage(rotatedImage, path,
+                    Long.toString(new Date().getTime()), compressFormat, quality);
+        } finally {
+            // Clean up remaining image
+            rotatedImage.recycle();
         }
-
-        File newFile = ImageResizer.saveImage(rotatedImage, path,
-                Long.toString(new Date().getTime()), compressFormat, quality);
-
-        // Clean up remaining image
-        rotatedImage.recycle();
 
         return newFile;
     }

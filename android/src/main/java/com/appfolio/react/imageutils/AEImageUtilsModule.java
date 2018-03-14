@@ -33,7 +33,7 @@ public class AEImageUtilsModule extends ReactContextBaseJavaModule {
         try {
             createResizedImageWithExceptions(imagePath, newWidth, newHeight, compressFormat, quality,
                     rotation, outputPath, successCb, failureCb);
-        } catch (IOException e) {
+        } catch (IOException | OutOfMemoryError e) {
             failureCb.invoke(e.getMessage());
         }
     }
