@@ -3,15 +3,13 @@ package com.appfolio.react.imageutils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContentResolver;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.media.ExifInterface;
 import android.util.Base64;
 
 import java.io.File;
@@ -99,48 +97,25 @@ final class ImageResizer {
     }
 
     /**
-     * Get {@link File} object for the given Android URI.<br>
-     * Use content resolver to get real path if direct path doesn't return valid file.
-     */
-    private static File getFileFromUri(Context context, Uri uri) {
-
-        // first try by direct path
-        File file = new File(uri.getPath());
-        if (file.exists()) {
-            return file;
-        }
-
-        // try reading real path from content resolver (gallery images)
-        Cursor cursor = null;
-        try {
-            String[] proj = {MediaStore.Images.Media.DATA};
-            cursor = context.getContentResolver().query(uri, proj, null, null, null);
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            String realPath = cursor.getString(column_index);
-            file = new File(realPath);
-        } catch (Exception ignored) {
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        return file;
-    }
-
-
-    /**
      * Get orientation by reading Image metadata
+     *
+     * Suppress the try-with-resources warning since Android Studio 3.0 extends support to all API levels.
+     * See https://developer.android.com/studio/write/java8-support.html#supported_features
      */
+    @SuppressLint("NewApi")
     private static int getOrientation(@NonNull final Context context, @NonNull final Uri uri) {
         try {
-            final File file = getFileFromUri(context, uri);
-            if (file.exists()) {
-                final ExifInterface ei = new ExifInterface(file.getAbsolutePath());
-                return getOrientation(ei);
+            final ContentResolver cr = context.getContentResolver();
+            try (final InputStream input = cr.openInputStream(uri)) {
+                if (input != null) {
+                    final ExifInterface ei = new ExifInterface(input);
+                    return getOrientation(ei);
+                }
             }
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+            // if there's an issue reading the file or content, we'll just assume no rotation
+            // this will definitely fail if given a data URI
+        }
 
         return 0;
     }
