@@ -11,31 +11,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class AEImageUtilsPackage implements ReactPackage {
-    /**
-     * @param reactContext react application context that can be used to create modules
-     * @return list of native modules to register with the newly created catalyst instance
-     */
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(new AEImageUtilsModule(reactContext));
     }
 
-    /**
-     * @return list of JS modules to register with the newly created catalyst instance.
-     * <p/>
-     * IMPORTANT: Note that only modules that needs to be accessible from the native code should be
-     * listed here. Also listing a native module here doesn't imply that the JS implementation of it
-     * will be automatically included in the JS bundle.
-     */
     // Deprecated from RN 0.47.0
     public List<Class<? extends JavaScriptModule>> createJSModules() {
         return Collections.emptyList();
     }
 
-    /**
-     * @param reactContext
-     * @return a list of view managers that should be registered with {@link UIManagerModule}
-     */
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Collections.emptyList();
