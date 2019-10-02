@@ -4,25 +4,39 @@ A React Native module that can create scaled versions of local images (also supp
 
 ## Getting started
 
-`$ npm install react-native-image-utils --save`
+### **1. Add `react-native-image-utils` to your dependencies**
 
-### Mostly automatic installation
+```sh
+$ yarn add github:appfolio/react-native-image-utils
+```
 
-`$ react-native link react-native-image-utils`
+### **2. Linking native dependencies**
 
-### Manual installation
+#### Mostly automatic installation
 
+```sh
+$ react-native link react-native-image-utils
+```
 
-#### iOS
+#### *iOS*:
+
+If using cocoapods in the `ios/` directory run
+```sh
+$ pod install
+```
+
+#### **Manual installation**
+
+#### *iOS*
 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. Go to `node_modules` ➜ `react-native-image-utils` ➜ `ios` and add `AEImageUtils.xcodeproj`
 3. In XCode, in the project navigator, select your project. Add `libAEImageUtils.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)<
 
-#### Android
+#### *Android*
 
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
+1. Open up `android/app/src/main/java/[...]/MainApplication.java`
   - Add `import com.appfolio.react.imageutils.AEImageUtilsPackage;` to the imports at the top of the file
   - Add `new AEImageUtilsPackage()` to the list returned by the `getPackages()` method
 2. Append the following lines to `android/settings.gradle`:
