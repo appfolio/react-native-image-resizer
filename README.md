@@ -77,7 +77,7 @@ The promise resolves with an object containing: `path`, `uri`, `name` and `size`
 
 Option | Description
 ------ | -----------
-path | Path of image file, or a base64 encoded image string prefixed with 'data:image/imagetype' where `imagetype` is jpeg or png.
+path | Path or url of image file, or a base64 encoded image string prefixed with 'data:image/imagetype' where `imagetype` is jpeg or png.
 maxWidth | Image max width (ratio is preserved)
 maxHeight | Image max height (ratio is preserved)
 compressFormat | Can be either JPEG, PNG or WEBP (android only).

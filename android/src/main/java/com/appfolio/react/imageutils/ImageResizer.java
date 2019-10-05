@@ -12,12 +12,22 @@ import android.support.annotation.Nullable;
 import android.support.media.ExifInterface;
 import android.util.Base64;
 
+import com.facebook.react.modules.network.OkHttpClientProvider;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Provide method to resize image
@@ -26,6 +36,8 @@ final class ImageResizer {
     private final static String IMAGE_JPEG = "image/jpeg";
     private final static String IMAGE_PNG = "image/png";
     private final static String SCHEME_DATA = "data";
+    private final static String SCHEME_HTTP = "http";
+    private final static String SCHEME_HTTPS = "https";
 
     /**
      * Resize the specified bitmap, keeping its aspect ratio.
@@ -220,6 +232,39 @@ final class ImageResizer {
     }
 
     /**
+     * Load a Bitmap from an http or https URL.
+     */
+    @Nullable
+    public static Bitmap loadBitmapFromURL(@NonNull final Uri imageUri,
+                                           @NonNull final BitmapFactory.Options options) throws IOException {
+        Bitmap sourceImage = null;
+        URL url = null;
+
+        try {
+            url = new URL(imageUri.toString());
+        } catch (MalformedURLException e) {
+            throw new MalformedURLException("Unable to load image from a malformed URL: " + e.getMessage());
+        }
+
+        OkHttpClient client = OkHttpClientProvider.getOkHttpClient();
+        Request request = new Request.Builder()
+            .url(url)
+            .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response.code());
+      
+            InputStream input = response.body().byteStream();
+            sourceImage = BitmapFactory.decodeStream(input);
+            input.close();
+        } catch (IOException e) {
+            throw new IOException("Unable to download image", e);
+        }
+
+        return sourceImage;
+    }
+
+    /**
      * Load a Bitmap from a Uri which can either be Base64 encoded or a path to a file or content scheme
      */
     @Nullable
@@ -231,6 +276,8 @@ final class ImageResizer {
             sourceImage = loadBitmapFromFile(context, imageUri, options);
         } else if (SCHEME_DATA.equals(imageUriScheme)) {
             sourceImage = loadBitmapFromBase64(imageUri, options);
+        } else if (SCHEME_HTTP.equals(imageUriScheme) || SCHEME_HTTPS.equals(imageUriScheme)) {
+            sourceImage = loadBitmapFromURL(imageUri, options);
         }
 
         return sourceImage;
