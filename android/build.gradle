@@ -40,5 +40,5 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.android.support:exifinterface:25.4.0'
+    implementation 'androidx.exifinterface:exifinterface:1.0.0'
 }
