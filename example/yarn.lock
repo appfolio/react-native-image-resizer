@@ -2157,7 +2157,7 @@ react-native-gifted-spinner@^0.1.0:
   resolved "https://registry.yarnpkg.com/react-native-gifted-spinner/-/react-native-gifted-spinner-0.1.0.tgz#2c76094fa0469c59e96dead270cd5bca5a55962a"
 
 "react-native-image-utils@file:..":
-  version "0.0.1"
+  version "0.3.0"
 
 react-native@^0.41.0:
   version "0.41.2"
@@ -2911,8 +2911,8 @@ xmldom@0.1.x:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.1.tgz#a5c6d532be656e23db820efb943a1f04998d63af"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
 
 yallist@^2.0.0:
   version "2.1.2"
